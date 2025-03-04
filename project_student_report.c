@@ -17,9 +17,13 @@ void getStudentName(char *student_name);
 int getNumberOfSubjects();
 student_ *createStudentList(int number_grades);
 void printReport(const char *student_name, student_ *head, int number_grades);
+void saveReportToFile(const char *student_name, student_ *head, int number_grades);
 void freeMemory(student_ *head);
 int getValidScore(const char *subject_name);
 int calculateGrade(int score);
+void generateFileName(char *filename, const char *student_name);
+
+
 
 int main() {
     char student_name[MAX_SIZE_NAME];
@@ -30,6 +34,7 @@ int main() {
     student_ *head = createStudentList(number_grades);
 
     printReport(student_name, head, number_grades);
+    saveReportToFile(student_name, head, number_grades);
 
     freeMemory(head);
 
@@ -138,7 +143,49 @@ void printReport(const char *student_name, student_ *head, int number_grades) {
     
     printf("\nAverage grade: %.2f\n", average);
     printf("-------------------------------------------------\n");
+
+    // Print report to file
+
 }
+
+// Function to save the student report to a file
+void saveReportToFile(const char *student_name, student_ *head, int number_grades) {
+    char filename[MAX_SIZE_NAME + 20];
+    generateFileName(filename, student_name);
+
+    FILE *file = fopen(filename, "w");
+    if (!file) {
+        printf("Error creating file.\n");
+        return;
+    }
+
+    float total = 0;
+    int count = 0;
+
+    
+    
+    fprintf(file, "-------------------------------------------------\n");
+    fprintf(file, "Student: %s\n", student_name);
+    fprintf(file, "-------------------------------------------------\n");
+    fprintf(file, "%-20s %-10s %-6s\n", "Subject", "Score", "Grade");
+    fprintf(file, "-------------------------------------------------\n");
+
+    student_ *temp = head;
+    while (temp) {
+        fprintf(file, "%-20s %3d%%      %6d\n", temp->subject, temp->score, temp->grade);
+        total += temp->grade;
+        count++;
+        temp = temp->next;
+    }
+
+    
+    fprintf(file, "\nAverage grade: %.2f\n", count > 0 ? total / count : 0);
+    fprintf(file, "-------------------------------------------------\n");
+
+    fclose(file);
+    printf("Report saved as: %s\n", filename);
+}
+
 
 // Function to free allocated memory
 void freeMemory(student_ *head) {
@@ -148,4 +195,14 @@ void freeMemory(student_ *head) {
         free(temp);
         temp = next;
     }
+}
+
+void generateFileName(char *filename, const char *student_name) {
+    strcpy(filename, student_name);
+    for (int i = 0; filename[i]; i++) {
+        if (filename[i] == ' ') {
+            filename[i] = '_'; // Replace spaces with underscores
+        }
+    }
+    strcat(filename, "_report.txt");
 }
